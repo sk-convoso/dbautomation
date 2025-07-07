@@ -5,12 +5,13 @@
 # DESC          : To scan to find integer columns to identify if it is approaching the max limits
 # OWNER         : SK
 # CREATED AT    : 06/25/2025
-# UPDATED AT    : 06/30/2025
-# VERSION       : 1.1
+# UPDATED AT    : 07/02/2025
+# VERSION       : 1.2
 # ---------------------------------------------------------------------------------------------
 
 # DATE              # CHANGE HISTORY                                    # UPDATED BY
 # 2025/06/30        Added log and email options                         SK
+# 2025/07/02        Added command check                                 SK
 
 MYCNF=/home/skhurelbat/.my.cnf   # DB credentials to connect database
 THRESHOLD_ALERT_PCT=80           # Flag ones that are using more than X% (eg. 90%)  of their allowed value range.
