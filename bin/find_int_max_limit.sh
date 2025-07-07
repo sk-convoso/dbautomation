@@ -55,6 +55,10 @@ create_log() {
     touch $log_file
 }
 
+check_commands() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 send_email() {
     if [[ $email_on -eq 1 ]]; then
         from="identify_integer@$(hostname)"
@@ -174,6 +178,12 @@ main() {
         Example: $0 /sql/d02-c05/run/mysqld.sock"
             exit 1
         fi
+    fi
+
+    check_commands bc
+    if [[ $? != 0 ]]; then
+        log "ERROR: Please install bc!!!."
+        exit 1
     fi
 
     find_integers
