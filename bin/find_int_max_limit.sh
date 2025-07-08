@@ -5,13 +5,15 @@
 # DESC          : To scan to find integer columns to identify if it is approaching the max limits
 # OWNER         : SK
 # CREATED AT    : 06/25/2025
-# UPDATED AT    : 07/02/2025
-# VERSION       : 1.2
+# UPDATED AT    : 07/08/2025
+# VERSION       : 1.3
 # ---------------------------------------------------------------------------------------------
 
 # DATE              # CHANGE HISTORY                                    # UPDATED BY
 # 2025/06/30        Added log and email options                         SK
 # 2025/07/02        Added command check                                 SK
+# 2025/07/08        Excluding BIGINT to reduce execution time           SK
+#                   Added Madhur and Pawan into the email list
 
 MYCNF=/home/skhurelbat/.my.cnf   # DB credentials to connect database
 THRESHOLD_ALERT_PCT=80           # Flag ones that are using more than X% (eg. 90%)  of their allowed value range.
@@ -20,12 +22,13 @@ beyond_threshold_columns=0       # count the columns which are approaching their
 beyond_threshold_columns_list=() # list the column details which are approaching their max limit
 log_path="/tmp/identify_integer" # log file generating path
 TIMESTAMP=$(echo $(date "+%Y%m%d_%T") | tr -d ":")
-email_on=1 # flag for email report
+email_on=1                       # flag for email report
+email_recipient="skhurelbat@convoso.com, psubedi@convoso.com, mpant@convoso.com"
 
 # QUERY - COUNT ALL INTEGER
 query_count="SELECT COUNT(*) FROM information_schema.tables t
 JOIN information_schema.columns c USING (table_schema, TABLE_NAME)
-WHERE t.table_schema IN ('asterisk') and c.DATA_TYPE IN ('int', 'mediumint', 'smallint', 'tinyint','bigint');"
+WHERE t.table_schema IN ('asterisk') and c.DATA_TYPE IN ('int', 'mediumint', 'smallint', 'tinyint');"
 
 # QUERY - ALL INTEGER QUERY DETAILED
 query_list="SELECT table_schema, table_name, column_name, CAST(POW(2, case data_type
@@ -36,7 +39,7 @@ query_list="SELECT table_schema, table_name, column_name, CAST(POW(2, case data_
  when 'bigint' then 63 END+(column_type LIKE '% unsigned')) AS DECIMAL(65,0))-1 AS max_int, data_type
 FROM information_schema.tables t
 JOIN information_schema.columns c USING (table_schema, TABLE_NAME)
-WHERE t.table_schema IN ('asterisk') and c.DATA_TYPE IN ('int', 'mediumint', 'smallint', 'tinyint','bigint')
+WHERE t.table_schema IN ('asterisk') and c.DATA_TYPE IN ('int', 'mediumint', 'smallint', 'tinyint')
 -- LIMIT 10
 ;"
 
@@ -63,7 +66,7 @@ check_commands() {
 send_email() {
     if [[ $email_on -eq 1 ]]; then
         from="identify_integer@$(hostname)"
-        to="skhurelbat@convoso.com"
+        to=$email_recipient
         cur_date=$(date +"%F")
         subject="[$(hostname)] - integer threshold report - $INSTANCE_NAME - $cur_date"
         extra_message="$@"
